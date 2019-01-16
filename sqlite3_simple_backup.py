@@ -95,7 +95,7 @@ if __name__ == "__main__":
         logging.info("Backup directory does not exist: {};\nCreating...".format(backup_dir))
         os.makedirs(backup_dir)
     if not os.path.exists(db_file_fpath):
-        logging.info("{} is not valid file, please check file name and path".format(db_file_fpath))
+        logging.error("{} is not valid file, please check file name and path".format(db_file_fpath))
         sys.exit(1)
     backupSqlite3DB(db_file_fpath, backup_fpath)
     dropboxUpload(token, backup_fpath, backup_fname)
