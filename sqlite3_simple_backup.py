@@ -58,7 +58,11 @@ if __name__ == "__main__":
     # log file sits in the same dir as the script
     script_log = os.path.join(script_cwd, 'sqlite3_backup.log')
     # Configure logger
-    logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S", filename=script_log, level=logging.DEBUG)
+    logging.basicConfig(
+            format="%(asctime)s %(levelname)s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            filename=script_log,
+            level=logging.DEBUG)
 
     properties_file = os.path.join(script_cwd, 'properties.yaml')
 
@@ -67,12 +71,14 @@ if __name__ == "__main__":
             properties = yaml.load(props)
     except IOError as error:
         logging.error(error)
-        logging.error("Properties file: {} cannot be found. Please create one in the same dir where you keep this sript".format(properties_file))
+        logging.error("Properties file: {} cannot be found.\
+                Please create one in the same dir where you keep this sript".format(properties_file))
         sys.exit(2)
     """
     token: dropbox access token
     db_path: full path to sqlite3 db
     db_file: db file name
+    db_file_fpath: full path of db file
     backup_fname: resulting backup file name
     backup_dir: where we store backup files
     backup_fpath: full path of backup file
@@ -80,6 +86,7 @@ if __name__ == "__main__":
     token         = properties["dropbox"]["token"]
     db_path       = properties["db_path"]
     db_file       = properties["db_file"]
+    db_file_fpath = os.path.join(db_path, db_file)
     backup_fname  = "{0}{1}.gzip".format(db_file, time.strftime("-%Y%m%d-%H%M%S"))
     backup_dir    = os.path.join(db_path, 'backups')
     backup_fpath  = os.path.join(backup_dir, backup_fname)
@@ -87,6 +94,9 @@ if __name__ == "__main__":
     if not os.path.isdir(backup_dir):
         logging.info("Backup directory does not exist: {};\nCreating...".format(backup_dir))
         os.makedirs(backup_dir)
-    backupSqlite3DB(db_file, backup_fpath)
+    if not os.path.exists(db_file_fpath):
+        logging.info("{} is not valid file, please check file name and path".format(db_file_fpath))
+        sys.exit(1)
+    backupSqlite3DB(db_file_fpath, backup_fpath)
     dropboxUpload(token, backup_fpath, backup_fname)
     logging.info("Backup update has been successful.")
