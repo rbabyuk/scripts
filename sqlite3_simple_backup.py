@@ -1,5 +1,5 @@
 #!/home/pi/sqlite3/bin/python
-import sqlite3
+import sqlite3 #pysqlite3
 import time
 import os
 import sys
@@ -33,9 +33,13 @@ def backupSqlite3DB(db_file, backup_path):
     cursor = connection.cursor()
     # Lock database before making a backup
     cursor.execute('begin immediate')
-    
+
     # Make new backup file and archive it
-    gzipFile(db_file, backup_path)
+    with open("{}/weather.sql".format(backup_dir), 'w') as f:
+        for line in connection.iterdump():
+            f.write('%s\n' % line)
+    # to restore: zcat weather.db-20190305-072329.gzip | sqlite3 weather.db
+    gzipFile("{}/weather.sql".format(backup_dir), backup_path)
     
     # Unlock database
     connection.rollback()
